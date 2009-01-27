@@ -1,0 +1,31 @@
+#!/bin/sh
+
+set -e
+set -x
+
+GENTLE=../../gentle/gentle
+GRTS=../../gentle/grts.o
+REFLEX=../../reflex/reflex
+LIB=../../lib
+LEX=lex
+YACC=yacc
+CC=cc
+PLIK=grama
+
+$GENTLE $PLIK.g
+
+$REFLEX
+
+$LEX gen.l
+
+$YACC -v gen.y
+
+$CC -o $PLIK \
+   $PLIK.c \
+   lex.yy.c \
+   y.tab.c \
+   $LIB/errmsg.o \
+   $LIB/main.o \
+   $LIB/idents.o \
+   $GRTS
+
