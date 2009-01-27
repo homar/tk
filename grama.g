@@ -15,11 +15,14 @@
   list(List)
 
 'type' ConstList
-  is(IDENT,Expr2)
-  const_list(ConstList,IDENT,Expr2)
+  nil 
+  const_list(ConstObject, ConstList)
+
+'type' ConstObject
+  is(IDENT, Expr2)
 
 'type' List
-  did(Did)
+  nil
   list(List,Did)
 
 'type' Did
@@ -255,41 +258,55 @@
 
 'var' CurrentLevel: INT
 
-'action' DefMeaning(IDENT->Meaning_list)
+'action' DefMeaning(IDENT, Meaning_list)
 'condition' HasMeaning(IDENT->Meaning_list)
 
 'action' InitEnv
   'rule' InitEnv: CurrentLevel <- 0
 
 'action' defineConst(ConstList)
-  'rule' defineConst(is(Id, Expr_)):
-           CurrentLevel->ThisLevel  
-      
-           DefMeaning(Id, meaning_list(const(Expr_,ThisLevel),MeaningList))
-  'rule' defineConst(const_list(Is, Const_List)): DefineConst(Is) DefineConst(Const_List)
-         
+       'rule' defineConst(const_list(is(Id, Expr_), Const_List)):
+           CurrentLevel -> ThisLevel
+           eval_expr(expr(Expr_) -> Value)
+           HasMeaning(Id -> Meaning_list)
+           DefMeaning(Id, meaning_list(const(Value, ThisLevel), Meaning_list))
+           defineConst(Const_List)         
+       'rule' defineConst(nil)
+
 
 'action' defineVar(List)
-  'rule' defineVar(did(Did)): defineDid(Did)
-  'rule' defineVar(list(List,Did)): defineVar(List) defineVar(Did)
+  'rule' defineVar(list(Did_list,Did)): 
+         defineVar(Did_list) 
+         defineDid(Did)
+  'rule' defineVar(nil)
+
 
 'action' defineDid(Did)
-  'rule' defineDid(did1(tab1(Ident, Expr))):
+  'rule' defineDid(did1(tab1(Ident, Expr_))):
            CurrentLevel->ThisLevel
-           GetMeaning(Ident->Meaning_list)
-           DefMeaning(Ident,meaning_list(tb1(Expr,ThisLevel),Meaning_list))
+           HasMeaning(Ident-> Meaning_list)
+           eval_expr(Expr_ -> Value)
+           DefMeaning(Ident,meaning_list(tb1(Value,ThisLevel),Meaning_list))
   'rule' defineDid(did1(tab2(Ident, Expr1, Expr2))):
            CurrentLevel->ThisLevel
-           GetMeaning(Ident->Meaning_list)
-           DefMeaning(Ident,meaning_list(tb2(Expr1,Expr2,ThisLevel),Meaning_list))
+           HasMeaning(Ident->Meaning_list)
+           eval_expr(Expr1 -> Value1)
+           eval_expr(Expr2 -> Value2)
+           DefMeaning(Ident,meaning_list(tb2(Value1,Value2,ThisLevel),Meaning_list))
   'rule' defineDid(did1(tab3(Ident, Expr1, Expr2, Expr3))):
            CurrentLevel->ThisLevel
-           GetMeaning(Ident->Meaning_list)
-           DefMeaning(Ident,meaning_list(tb3(Expr1,Expr2,Expr3,ThisLevel),Meaning_list))
+           HasMeaning(Ident->Meaning_list)
+           eval_expr(Expr1 -> Value1)
+           eval_expr(Expr2 -> Value2)
+           eval_expr(Expr3 -> Value3)
+           DefMeaning(Ident,meaning_list(tb3(Value1,Value2,Value3,ThisLevel),Meaning_list))
   'rule' defineDid(did2(Ident)):
            CurrentLevel->ThisLevel
-           GetMeaning(Ident->Meaning_list)
+           HasMeaning(Ident->Meaning_list)
            DefMeaning(Ident,meaning_list(var(ThisLevel),Meaning_list)) 
+
+'action' eval_expr(Expr -> INT)
+        'rule' eval_expr(E -> 0)
 
 'action' analyze(Program)
   'rule' analyze(program(Declaration_List,Instruction_List)):InitEnv an_declaration_list(Declaration_List) an_instruction_list(Instruction_List)
@@ -307,18 +324,18 @@
   'rule' an_instruction_list(nil):
 
 'action' an_instruction(Instruction)
-  'rule' an_instruction(instruction_open(Opent_Statement)):an_open_statement(Open_Statement)
-  'rule' an_instruction(instruction_close(Closed_Statement)): an_close_statement(Closed_Statement)
+  'rule' an_instruction(instruction_open(OpenStatement_)):an_open_statement(OpenStatement_)
+  'rule' an_instruction(instruction_close(ClosedStatement_)): an_close_statement(ClosedStatement_)
 
 'action' an_open_statement(OpenStatement)
   'rule' an_open_statement(if(Expr_,Instruction_)): an_expr(Expr_) an_instruction(Instruction_)
-  'rule' an_open_statement(if_else(Expr_,ClosedStament_,OpenStatement_)): an_expr(Expr_) an_close_statement(Closed_Statement) an_open_statement(Open_Statement)
-  'rule' an_open_statement(loop_open(Loop_Header,Open_Statement)): an_loop_header(Loop_Header) an_open_statement(Open_Statement)
+  'rule' an_open_statement(if_else(Expr_,ClosedStatement_,OpenStatement_)): an_expr(Expr_) an_close_statement(ClosedStatement_) an_open_statement(OpenStatement_)
+  'rule' an_open_statement(loop_open(Loop_Header,OpenStatement_)): an_loop_header(Loop_Header) an_open_statement(OpenStatement_)
 
 'action' an_close_statement(ClosedStatement)
   'rule' an_close_statement(simple_statement(Simple_Statement)): an_simple_statement(Simple_Statement)
-  'rule' an_close_statement(if_else(Expr_,Closed_Statement,Closed_Statement)): an_expr(Expr_) an_close_statement(Closed_Statement) an_close_statement(Closed_Statement)
-  'rule' an_close_statement(do(Expr_,Instruction_,Expr_)): an_expr(Expr_) an_instruction(Instruction_) an_expr(Expr_)
+  'rule' an_close_statement(if_else(Expr_,Closed_Statement1,Closed_Statement2)): an_expr(Expr_) an_close_statement(Closed_Statement1) an_close_statement(Closed_Statement2)
+  'rule' an_close_statement(do(Expr_1,Instruction_,Expr_1)): an_expr(Expr_1) an_instruction(Instruction_) an_expr(Expr_1)
   'rule' an_close_statement(loop_closed(Loop_Header,Closed_Statement)): an_loop_header(Loop_Header) an_close_statement(Closed_Statement)
 
 'action' an_loop_header(LoopHeader)
