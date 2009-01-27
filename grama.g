@@ -23,7 +23,7 @@
 
 'type' List
   nil
-  list(List,Did)
+  list(Did, List)
 
 'type' Did
   did1(Tab)
@@ -64,7 +64,7 @@
   nil
   goto(IDENT)
   simple_statement(IDENT)
-  return(Expr)
+  return
   expr(Expr)
   block(Block)
 
@@ -142,8 +142,8 @@
   'rule' const_object(->is(X,Y)): Ident(->X) "=" expr2(->Y)
 
 'nonterm' list(->List)
-  'rule' list(->nil   ):
-  'rule' list(->list(X,Y)): list(->X) "," did(->Y)
+  'rule' list(->list(X, nil)): did(->X)
+  'rule' list(->list(X,Y)): did(->X) "," list(->Y)
 
 'nonterm' did(->Did)
   'rule' did(->did1(X)): tab(->X)
@@ -186,7 +186,7 @@
   'rule' simple_statement(->nil): "continue" ";"
   'rule' simple_statement(->goto(X)): "goto" Ident(->X) ";"
   'rule' simple_statement(->simple_statement(X)): Ident(->X) ":"
-  'rule' simple_statement(->return(X)): "return" expr(->X) ";"
+  'rule' simple_statement(->return): "return" ";"
   'rule' simple_statement(->expr(X)): expr(->X) ";"
   'rule' simple_statement(->nil): ";"
   'rule' simple_statement(->block(X)): block(->X)
@@ -279,7 +279,7 @@
 
 
 'action' defineVar(List)
-  'rule' defineVar(list(Did_list,Did)): 
+  'rule' defineVar(list(Did, Did_list)): 
          defineVar(Did_list) 
          defineDid(Did)
   'rule' defineVar(nil)
@@ -350,7 +350,7 @@
   'rule' an_simple_statement(nil)
   'rule' an_simple_statement(goto(Ident)): an_ident(Ident)
   'rule' an_simple_statement(simple_statement(Ident)): an_ident(Ident)
-  'rule' an_simple_statement(return(Expr_)): an_expr(Expr_)
+  'rule' an_simple_statement(return)
   'rule' an_simple_statement(expr(Expr_)): an_expr(Expr_)
   'rule' an_simple_statement(block(Block_)): an_block(Block_)
 
