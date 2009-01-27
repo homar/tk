@@ -20,7 +20,7 @@
   const_list(ConstObject, ConstList)
 
 'type' ConstObject
-  is(IDENT, Expr2)
+  is(IDENT, Expr)
 
 'type' List
   nil
@@ -59,7 +59,7 @@
 
 'type' LoopHeader
   while(Expr)
-  for(ExprFor,ExprFor,ExprFor)
+  for(Expr,Expr,Expr)
 
 'type' SimpleStatement
   nil
@@ -69,54 +69,24 @@
   expr(Expr)
   block(Block)
 
-'type' ExprFor
-  nil
-  expr(Expr)
-
 'type' Expr
-  expr(Expr2)
-  coma(Expr,Expr2)
-
-'type' Expr2
-  expr(Expr3) 
-  is(IDENT,Expr2)
-
-'type' Expr3
-  expr(Expr4)
-  or(Expr3,Expr4)
-
-'type' Expr4
-  expr(Expr5)
-  and(Expr4,Expr5)
-
-'type' Expr5
-  expr(Expr6)
-  same(Expr5,Expr6)
-  not_same(Expr5,Expr6)
-
-'type' Expr6
-  expr(Expr7)
-  less(Expr6,Expr7)
-  more(Expr6,Expr7)
-  same_less(Expr6,Expr7)
-  same_more(Expr6,Expr7)
-
-'type' Expr7
-  expr(Expr8)
-  plus(Expr7,Expr8)
-  minus(Expr7,Expr8)
-
-'type' Expr8
-  expr(Expr9)
-  mult(Expr8,Expr9)
-  div(Expr8,Expr9)
-  mod(Expr8,Expr9)
-
-'type' Expr9
-  expr(Expr10)
-  negation(Expr9)
-
-'type' Expr10
+  nil
+  coma(Expr, Expr)
+  is(IDENT, Expr)
+  or(Expr, Expr)
+  and(Expr, Expr)
+  same(Expr, Expr)
+  not_same(Expr, Expr)
+  less(Expr, Expr)
+  more(Expr, Expr)
+  same_less(Expr, Expr)
+  same_more(Expr, Expr)
+  plus(Expr, Expr)
+  minus(Expr, Expr)
+  mult(Expr, Expr)
+  div(Expr, Expr)
+  mod(Expr, Expr)
+  negation(Expr)
   pp_ident(IDENT)
   mm_ident(IDENT)
   num(INT)
@@ -124,8 +94,7 @@
   tab(Tab)
   ident_mm(IDENT)
   ident_pp(IDENT)
-  expr(Expr)
-
+  
 
 'nonterm' program(->Program)
   'rule' program(->program(X,Y)): declaration_list(->X) instruction_list(->Y) 
@@ -196,54 +165,55 @@
   'rule' simple_statement(->nil): ";"
   'rule' simple_statement(->block(X)): block(->X)
 
-'nonterm' expr_for(->ExprFor)
+
+'nonterm' expr_for(->Expr)
   'rule' expr_for(->nil): 
-  'rule' expr_for(->expr(X)): expr(->X)
+  'rule' expr_for(->X): expr(->X)
 
 'nonterm' expr(->Expr)
-  'rule' expr(->expr(X)): expr2(->X)
+  'rule' expr(->X): expr2(->X)
   'rule' expr(->coma(X,Y)): expr(->X) "," expr2(->Y)      
 
-'nonterm' expr2(->Expr2)
-  'rule' expr2(->expr(X)): expr3(->X)
+'nonterm' expr2(->Expr)
+  'rule' expr2(->X): expr3(->X)
   'rule' expr2(->is(X,Y)): Ident(->X) "=" expr2(->Y)
 
-'nonterm' expr3(->Expr3)
-  'rule' expr3(->expr(X)): expr4(->X)
+'nonterm' expr3(->Expr)
+  'rule' expr3(->X): expr4(->X)
   'rule' expr3(->or(X,Y)): expr3(->X) "||" expr4(->Y)
 
-'nonterm' expr4(->Expr4)
-  'rule' expr4(->expr(X)): expr5(->X)
+'nonterm' expr4(->Expr)
+  'rule' expr4(->X): expr5(->X)
   'rule' expr4(->and(X,Y)): expr4(->X) "&&" expr5(->Y)
 
-'nonterm' expr5(->Expr5)
-  'rule' expr5(->expr(X)): expr6(->X)
+'nonterm' expr5(->Expr)
+  'rule' expr5(->X): expr6(->X)
   'rule' expr5(->same(X,Y)): expr5(->X) "==" expr6(->Y)
   'rule' expr5(->not_same(X,Y)): expr5(->X) "!=" expr6(->Y)
 
-'nonterm' expr6(->Expr6)
-  'rule' expr6(->expr(X)): expr7(->X)
+'nonterm' expr6(->Expr)
+  'rule' expr6(->X): expr7(->X)
   'rule' expr6(->less(X,Y)): expr6(->X) "<" expr7(->Y)
   'rule' expr6(->more(X,Y)): expr6(->X) ">" expr7(->Y)
   'rule' expr6(->same_less(X,Y)): expr6(->X) "<=" expr7(->Y)
   'rule' expr6(->same_more(X,Y)): expr6(->X) ">=" expr7(->Y)
 
-'nonterm' expr7(->Expr7)
-  'rule' expr7(->expr(X)): expr8(->X)
+'nonterm' expr7(->Expr)
+  'rule' expr7(->X): expr8(->X)
   'rule' expr7(->plus(X,Y)): expr7(->X) "+" expr8(->Y)
   'rule' expr7(->minus(X,Y)): expr7(->X) "-" expr8(->Y)
 
-'nonterm' expr8(->Expr8)
-  'rule' expr8(->expr(X)): expr9(->X)
+'nonterm' expr8(->Expr)
+  'rule' expr8(->X): expr9(->X)
   'rule' expr8(->mult(X,Y)): expr8(->X) "*" expr9(->Y)
   'rule' expr8(->div(X,Y)): expr8(->X) "/" expr9(->Y)
   'rule' expr8(->mod(X,Y)): expr8(->X) "%" expr9(->Y)
 
-'nonterm' expr9(->Expr9)
-  'rule' expr9(->expr(X)): expr10(->X)
+'nonterm' expr9(->Expr)
+  'rule' expr9(->X): expr10(->X)
   'rule' expr9(->negation(X)): "!" expr9(->X)
 
-'nonterm' expr10(->Expr10)
+'nonterm' expr10(->Expr)
   'rule' expr10(->pp_ident(X)): "++" Ident(->X)
   'rule' expr10(->mm_ident(X)): "--" Ident(->X)
   'rule' expr10(->num(X)): Number(->X)
@@ -251,7 +221,7 @@
   'rule' expr10(->tab(X)): tab(->X)
   'rule' expr10(->ident_mm(X)): Ident(->X) "--"
   'rule' expr10(->ident_pp(X)): Ident(->X) "++"
-  'rule' expr10(->expr(X)): "(" expr(->X) ")"
+  'rule' expr10(->X): "(" expr(->X) ")"
 
 'token' Ident(->IDENT)
 'token' Number(->INT)
@@ -280,7 +250,7 @@
 'action' defineConst(ConstList)
        'rule' defineConst(const_list(is(Id, Expr_), Const_List)):
            CurrentLevel -> ThisLevel
-           eval_expr(expr(Expr_) -> Value)
+           eval_expr(Expr_ -> Value)
            HasMeaning(Id -> Meaning_list)
            DefMeaning(Id, meaning_list(const(Value, ThisLevel), Meaning_list))
            defineConst(Const_List)         
@@ -353,7 +323,7 @@
 
 'action' an_loop_header(LoopHeader)
   'rule' an_loop_header(while(Expr_)): an_expr(Expr_)
-  'rule' an_loop_header(for(Expr_For1,Expr_For2,Expr_For3)): an_expr_for(Expr_For1) an_expr_for(Expr_For2) an_expr_for(Expr_For3)
+  'rule' an_loop_header(for(Expr_For1,Expr_For2,Expr_For3)): an_expr(Expr_For1) an_expr(Expr_For2) an_expr(Expr_For3)
 
 'action' an_simple_statement(SimpleStatement)
   'rule' an_simple_statement(nil)
@@ -363,9 +333,6 @@
   'rule' an_simple_statement(expr(Expr_)): an_expr(Expr_)
   'rule' an_simple_statement(block(Block_)): an_block(Block_)
 
-'action' an_expr_for(ExprFor)
-  'rule' an_expr_for(nil)
-  'rule' an_expr_for(expr(Expr_)):an_expr(Expr_)
 
 'action' an_block(Block)
   'rule' an_block(block(Declaration_List,Instruction_List)): an_declaration_list(Declaration_List) an_instruction_list(Instruction_List)
@@ -374,11 +341,7 @@
   'rule' an_ident(Ident)
 
 'action' an_expr(Expr)
-  'rule' an_expr(expr(Expr2_)): an_expr2(Expr2_)
-  'rule' an_expr(coma(Expr_,Expr2_)): an_expr(Expr_) an_expr2(Expr2_)
-
-'action' an_expr2(Expr2)
-  'rule' an_expr2(_)
+  'rule' an_expr(_)
 
 -- Genarating Three Address Code -------------------------------------------------------------------------------------------------------
 --     Three Address Code  Abstract Syntax ---------------------------------------------------------------------------------------------
@@ -464,124 +427,85 @@
                generate_code_from_declarations(DL, TAC_IL -> UPDATED_TAC_IL)
                generate_code_from_instructions(IL, UPDATED_TAC_IL -> NEW_TAC_IL)
         'rule' generate_code_for_simple_statement(expr(E), TAC_IL -> NEW_TAC_IL):
-               generate_code_for_expression1(E, TAC_IL -> NEW_TAC_IL, EXPR_VALUE) /*EXPR_VALUE - variable which holds results for this expr */
+               generate_code_for_expression(E, TAC_IL -> NEW_TAC_IL, EXPR_VALUE) /*EXPR_VALUE - variable which holds results for this expr */
 
-'action' generate_code_for_expression1(Expr, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST, ARGUMENT)
-       'rule' generate_code_for_expression1(expr(EXPR2), TAC_IL -> NEW_TAC_IL, EXPR_VALUE):
-              generate_code_for_expression2(EXPR2, TAC_IL -> NEW_TAC_IL, EXPR_VALUE)
-       'rule' generate_code_for_expression1(coma(EXPR1, EXPR2), TAC_IL -> NEW_TAC_IL, EXPR_VALUE):
-              generate_code_for_expression1(EXPR1, TAC_IL -> U_TAC_IL, _)
-              generate_code_for_expression2(EXPR2, U_TAC_IL -> NEW_TAC_IL, EXPR_VALUE)
-       
-'action' generate_code_for_expression2(Expr2, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST, ARGUMENT)
-       'rule' generate_code_for_expression2(expr(EXPR3), TAC_IL -> NEW_TAC_IL, EXPR_VALUE):
-              generate_code_for_expression3(EXPR3, TAC_IL -> NEW_TAC_IL, EXPR_VALUE)
-       'rule' generate_code_for_expression2(is(Id, EXPR2), TAC_IL -> 
+'action' generate_code_for_expression(Expr, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST, ARGUMENT)
+       'rule' generate_code_for_expression(coma(EXPR1, EXPR2), TAC_IL -> NEW_TAC_IL, EXPR_VALUE):
+              generate_code_for_expression(EXPR1, TAC_IL -> U_TAC_IL, _)
+              generate_code_for_expression(EXPR2, U_TAC_IL -> NEW_TAC_IL, EXPR_VALUE)
+       'rule' generate_code_for_expression(is(Id, EXPR2), TAC_IL -> 
                  list(two_arguments_operation(plus, identifier(Id), EXPR_VALUE, number(0)), NEW_TAC_IL) , identifier(Id)):
-              generate_code_for_expression2(EXPR2, TAC_IL -> NEW_TAC_IL, EXPR_VALUE)
-
-'action' generate_code_for_expression3(Expr3, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST, ARGUMENT)
-       'rule' generate_code_for_expression3(expr(EXPR4), TAC_IL -> NEW_TAC_IL, EXPR_VALUE):
-              generate_code_for_expression4(EXPR4, TAC_IL -> NEW_TAC_IL, EXPR_VALUE)
-       'rule' generate_code_for_expression3(or(EXPR3, EXPR4), TAC_IL -> 
+              generate_code_for_expression(EXPR2, TAC_IL -> NEW_TAC_IL, EXPR_VALUE)
+       'rule' generate_code_for_expression(or(EXPR3, EXPR4), TAC_IL -> 
                   list(two_arguments_operation(or, TMP_VARIABLE, EXPR3_VALUE, EXPR4_VALUE), NEW_TAC_IL), TMP_VARIABLE):
-              generate_code_for_expression3(EXPR3, TAC_IL -> UPDATED_TAC_IL, EXPR3_VALUE)
-              generate_code_for_expression4(EXPR4, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR4_VALUE)
+              generate_code_for_expression(EXPR3, TAC_IL -> UPDATED_TAC_IL, EXPR3_VALUE)
+              generate_code_for_expression(EXPR4, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR4_VALUE)
               create_temp_variable(-> TMP_VARIABLE)
-
-'action' generate_code_for_expression4(Expr4, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST, ARGUMENT)
-       'rule' generate_code_for_expression4(expr(EXPR5), TAC_IL -> NEW_TAC_IL, EXPR_VALUE):
-              generate_code_for_expression5(EXPR5, TAC_IL -> NEW_TAC_IL, EXPR_VALUE)
-       'rule' generate_code_for_expression4(and(EXPR4, EXPR5), TAC_IL -> 
+       'rule' generate_code_for_expression(and(EXPR4, EXPR5), TAC_IL -> 
                   list(two_arguments_operation(and, TMP_VARIABLE, EXPR4_VALUE, EXPR5_VALUE), NEW_TAC_IL), TMP_VARIABLE):
-              generate_code_for_expression4(EXPR4, TAC_IL -> UPDATED_TAC_IL, EXPR4_VALUE)
-              generate_code_for_expression5(EXPR5, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR5_VALUE)
+              generate_code_for_expression(EXPR4, TAC_IL -> UPDATED_TAC_IL, EXPR4_VALUE)
+              generate_code_for_expression(EXPR5, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR5_VALUE)
               create_temp_variable(-> TMP_VARIABLE)
-
-'action' generate_code_for_expression5(Expr5, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST, ARGUMENT)
-       'rule' generate_code_for_expression5(expr(EXPR6), TAC_IL -> NEW_TAC_IL, EXPR_VALUE):
-              generate_code_for_expression6(EXPR6, TAC_IL -> NEW_TAC_IL, EXPR_VALUE)
-       'rule' generate_code_for_expression5(same(EXPR5, EXPR6), TAC_IL -> 
+       'rule' generate_code_for_expression(same(EXPR5, EXPR6), TAC_IL -> 
                   list(two_arguments_operation(equal, TMP_VARIABLE, EXPR5_VALUE, EXPR6_VALUE), NEW_TAC_IL), TMP_VARIABLE):
-              generate_code_for_expression5(EXPR5, TAC_IL -> UPDATED_TAC_IL, EXPR5_VALUE)
-              generate_code_for_expression6(EXPR6, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR6_VALUE)
+              generate_code_for_expression(EXPR5, TAC_IL -> UPDATED_TAC_IL, EXPR5_VALUE)
+              generate_code_for_expression(EXPR6, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR6_VALUE)
               create_temp_variable(-> TMP_VARIABLE)
-       'rule' generate_code_for_expression5(not_same(EXPR5, EXPR6), TAC_IL -> 
+       'rule' generate_code_for_expression(not_same(EXPR5, EXPR6), TAC_IL -> 
                   list(two_arguments_operation(nequal, TMP_VARIABLE, EXPR5_VALUE, EXPR6_VALUE), NEW_TAC_IL), TMP_VARIABLE):
-              generate_code_for_expression5(EXPR5, TAC_IL -> UPDATED_TAC_IL, EXPR5_VALUE)
-              generate_code_for_expression6(EXPR6, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR6_VALUE)
+              generate_code_for_expression(EXPR5, TAC_IL -> UPDATED_TAC_IL, EXPR5_VALUE)
+              generate_code_for_expression(EXPR6, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR6_VALUE)
               create_temp_variable(-> TMP_VARIABLE)
-
-'action' generate_code_for_expression6(Expr6, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST, ARGUMENT)
-       'rule' generate_code_for_expression6(expr(EXPR7), TAC_IL -> NEW_TAC_IL, EXPR_VALUE):
-              generate_code_for_expression7(EXPR7, TAC_IL -> NEW_TAC_IL, EXPR_VALUE)
-       'rule' generate_code_for_expression6(less(EXPR6, EXPR7), TAC_IL -> 
+       'rule' generate_code_for_expression(less(EXPR6, EXPR7), TAC_IL -> 
                   list(two_arguments_operation(less, TMP_VARIABLE, EXPR6_VALUE, EXPR7_VALUE), NEW_TAC_IL), TMP_VARIABLE):
-              generate_code_for_expression6(EXPR6, TAC_IL -> UPDATED_TAC_IL, EXPR6_VALUE)
-              generate_code_for_expression7(EXPR7, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR7_VALUE)
+              generate_code_for_expression(EXPR6, TAC_IL -> UPDATED_TAC_IL, EXPR6_VALUE)
+              generate_code_for_expression(EXPR7, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR7_VALUE)
               create_temp_variable(-> TMP_VARIABLE)
-       'rule' generate_code_for_expression6(more(EXPR6, EXPR7), TAC_IL -> 
+       'rule' generate_code_for_expression(more(EXPR6, EXPR7), TAC_IL -> 
                   list(two_arguments_operation(greater, TMP_VARIABLE, EXPR6_VALUE, EXPR7_VALUE), NEW_TAC_IL), TMP_VARIABLE):
-              generate_code_for_expression6(EXPR6, TAC_IL -> UPDATED_TAC_IL, EXPR6_VALUE)
-              generate_code_for_expression7(EXPR7, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR7_VALUE)
+              generate_code_for_expression(EXPR6, TAC_IL -> UPDATED_TAC_IL, EXPR6_VALUE)
+              generate_code_for_expression(EXPR7, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR7_VALUE)
               create_temp_variable(-> TMP_VARIABLE)
-       'rule' generate_code_for_expression6(same_less(EXPR6, EXPR7), TAC_IL -> 
+       'rule' generate_code_for_expression(same_less(EXPR6, EXPR7), TAC_IL -> 
                   list(two_arguments_operation(le, TMP_VARIABLE, EXPR6_VALUE, EXPR7_VALUE), NEW_TAC_IL), TMP_VARIABLE):
-              generate_code_for_expression6(EXPR6, TAC_IL -> UPDATED_TAC_IL, EXPR6_VALUE)
-              generate_code_for_expression7(EXPR7, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR7_VALUE)
+              generate_code_for_expression(EXPR6, TAC_IL -> UPDATED_TAC_IL, EXPR6_VALUE)
+              generate_code_for_expression(EXPR7, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR7_VALUE)
               create_temp_variable(-> TMP_VARIABLE)
-       'rule' generate_code_for_expression6(same_more(EXPR6, EXPR7), TAC_IL -> 
+       'rule' generate_code_for_expression(same_more(EXPR6, EXPR7), TAC_IL -> 
                   list(two_arguments_operation(ge, TMP_VARIABLE, EXPR6_VALUE, EXPR7_VALUE), NEW_TAC_IL), TMP_VARIABLE):
-              generate_code_for_expression6(EXPR6, TAC_IL -> UPDATED_TAC_IL, EXPR6_VALUE)
-              generate_code_for_expression7(EXPR7, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR7_VALUE)
+              generate_code_for_expression(EXPR6, TAC_IL -> UPDATED_TAC_IL, EXPR6_VALUE)
+              generate_code_for_expression(EXPR7, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR7_VALUE)
               create_temp_variable(-> TMP_VARIABLE)
-
-'action' generate_code_for_expression7(Expr7, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST, ARGUMENT)
-       'rule' generate_code_for_expression7(expr(EXPR8), TAC_IL -> NEW_TAC_IL, EXPR_VALUE):
-              generate_code_for_expression8(EXPR8, TAC_IL -> NEW_TAC_IL, EXPR_VALUE)
-       'rule' generate_code_for_expression7(plus(EXPR7, EXPR8), TAC_IL -> 
+       'rule' generate_code_for_expression(plus(EXPR7, EXPR8), TAC_IL -> 
                   list(two_arguments_operation(plus, TMP_VARIABLE, EXPR7_VALUE, EXPR8_VALUE), NEW_TAC_IL), TMP_VARIABLE):
-              generate_code_for_expression7(EXPR7, TAC_IL -> UPDATED_TAC_IL, EXPR7_VALUE)
-              generate_code_for_expression8(EXPR8, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR8_VALUE)
+              generate_code_for_expression(EXPR7, TAC_IL -> UPDATED_TAC_IL, EXPR7_VALUE)
+              generate_code_for_expression(EXPR8, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR8_VALUE)
               create_temp_variable(-> TMP_VARIABLE)
-       'rule' generate_code_for_expression7(minus(EXPR7, EXPR8), TAC_IL -> 
+       'rule' generate_code_for_expression(minus(EXPR7, EXPR8), TAC_IL -> 
                   list(two_arguments_operation(minus, TMP_VARIABLE, EXPR7_VALUE, EXPR8_VALUE), NEW_TAC_IL), TMP_VARIABLE):
-              generate_code_for_expression7(EXPR7, TAC_IL -> UPDATED_TAC_IL, EXPR7_VALUE)
-              generate_code_for_expression8(EXPR8, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR8_VALUE)
+              generate_code_for_expression(EXPR7, TAC_IL -> UPDATED_TAC_IL, EXPR7_VALUE)
+              generate_code_for_expression(EXPR8, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR8_VALUE)
               create_temp_variable(-> TMP_VARIABLE)
-
-'action' generate_code_for_expression8(Expr8, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST, ARGUMENT)
-       'rule' generate_code_for_expression8(expr(EXPR9), TAC_IL -> NEW_TAC_IL, EXPR_VALUE):
-              generate_code_for_expression9(EXPR9, TAC_IL -> NEW_TAC_IL, EXPR_VALUE)
-       'rule' generate_code_for_expression8(mult(EXPR8, EXPR9), TAC_IL -> 
+       'rule' generate_code_for_expression(mult(EXPR8, EXPR9), TAC_IL -> 
                   list(two_arguments_operation(multi, TMP_VARIABLE, EXPR8_VALUE, EXPR9_VALUE), NEW_TAC_IL), TMP_VARIABLE):
-              generate_code_for_expression8(EXPR8, TAC_IL -> UPDATED_TAC_IL, EXPR8_VALUE)
-              generate_code_for_expression9(EXPR9, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR9_VALUE)
+              generate_code_for_expression(EXPR8, TAC_IL -> UPDATED_TAC_IL, EXPR8_VALUE)
+              generate_code_for_expression(EXPR9, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR9_VALUE)
               create_temp_variable(-> TMP_VARIABLE)
-       'rule' generate_code_for_expression8(div(EXPR8, EXPR9), TAC_IL -> 
+       'rule' generate_code_for_expression(div(EXPR8, EXPR9), TAC_IL -> 
                   list(two_arguments_operation(div, TMP_VARIABLE, EXPR8_VALUE, EXPR9_VALUE), NEW_TAC_IL), TMP_VARIABLE):
-              generate_code_for_expression8(EXPR8, TAC_IL -> UPDATED_TAC_IL, EXPR8_VALUE)
-              generate_code_for_expression9(EXPR9, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR9_VALUE)
+              generate_code_for_expression(EXPR8, TAC_IL -> UPDATED_TAC_IL, EXPR8_VALUE)
+              generate_code_for_expression(EXPR9, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR9_VALUE)
               create_temp_variable(-> TMP_VARIABLE)
-       'rule' generate_code_for_expression8(mod(EXPR8, EXPR9), TAC_IL -> 
+       'rule' generate_code_for_expression(mod(EXPR8, EXPR9), TAC_IL -> 
                   list(two_arguments_operation(mod, TMP_VARIABLE, EXPR8_VALUE, EXPR9_VALUE), NEW_TAC_IL), TMP_VARIABLE):
-              generate_code_for_expression8(EXPR8, TAC_IL -> UPDATED_TAC_IL, EXPR8_VALUE)
-              generate_code_for_expression9(EXPR9, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR9_VALUE)
+              generate_code_for_expression(EXPR8, TAC_IL -> UPDATED_TAC_IL, EXPR8_VALUE)
+              generate_code_for_expression(EXPR9, UPDATED_TAC_IL -> NEW_TAC_IL, EXPR9_VALUE)
               create_temp_variable(-> TMP_VARIABLE)
-
-'action' generate_code_for_expression9(Expr9, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST, ARGUMENT)
-       'rule' generate_code_for_expression9(expr(EXPR10), TAC_IL -> NEW_TAC_IL, EXPR_VALUE):
-              generate_code_for_expression10(EXPR10, TAC_IL -> NEW_TAC_IL, EXPR_VALUE)
-       'rule' generate_code_for_expression9(negation(EXPR9), TAC_IL -> 
+       'rule' generate_code_for_expression(negation(EXPR9), TAC_IL -> 
                   list(one_argument_operation(not, TMP_VARIABLE, EXPR9_VALUE), NEW_TAC_IL), TMP_VARIABLE):
-              generate_code_for_expression9(EXPR9, TAC_IL -> NEW_TAC_IL, EXPR9_VALUE)
+              generate_code_for_expression(EXPR9, TAC_IL -> NEW_TAC_IL, EXPR9_VALUE)
               create_temp_variable(-> TMP_VARIABLE)
-
-'action' generate_code_for_expression10(Expr10, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST, ARGUMENT)
-       'rule' generate_code_for_expression10(num(N), TAC_IL -> TAC_IL, number(N))
-       'rule' generate_code_for_expression10(ident(I), TAC_IL -> TAC_IL, identifier(I))
-       'rule' generate_code_for_expression10(expr(EXPR1), TAC_IL -> NEW_TAC_IL, EXPR_VALUE):
-              generate_code_for_expression1(EXPR1, TAC_IL -> NEW_TAC_IL, EXPR_VALUE)
-       'rule' generate_code_for_expression10(pp_indent(Id), TAC_IL -> NEW_TAC_IL
+       'rule' generate_code_for_expression(num(N), TAC_IL -> TAC_IL, number(N))
+       'rule' generate_code_for_expression(ident(I), TAC_IL -> TAC_IL, identifier(I))
 
 
