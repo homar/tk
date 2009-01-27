@@ -507,5 +507,24 @@
               create_temp_variable(-> TMP_VARIABLE)
        'rule' generate_code_for_expression(num(N), TAC_IL -> TAC_IL, number(N))
        'rule' generate_code_for_expression(ident(I), TAC_IL -> TAC_IL, identifier(I))
+       'rule' generate_code_for_expression(pp_ident(I), TAC_IL -> NEW_TAC_IL,  TMP_VARIABLE):
+              where(TAC_INSTRUCTION_LIST'list(two_arguments_operation(plus, identifier(I), identifier(I), number(1)), TAC_IL) -> U_TAC_IL)
+              create_temp_variable(->TMP_VARIABLE)
+              where(TAC_INSTRUCTION_LIST'list(two_arguments_operation(plus, TMP_VARIABLE, identifier(I), number(0)), U_TAC_IL) -> NEW_TAC_IL)
+       'rule' generate_code_for_expression(mm_ident(I), TAC_IL -> NEW_TAC_IL,  TMP_VARIABLE):
+              where(TAC_INSTRUCTION_LIST'list(two_arguments_operation(minus, identifier(I), identifier(I), number(1)), TAC_IL) -> U_TAC_IL)
+              create_temp_variable(->TMP_VARIABLE)
+              where(TAC_INSTRUCTION_LIST'list(two_arguments_operation(plus, TMP_VARIABLE, identifier(I), number(0)), U_TAC_IL) -> NEW_TAC_IL)
+       'rule' generate_code_for_expression(ident_pp(I), TAC_IL -> NEW_TAC_IL,  TMP_VARIABLE):
+              create_temp_variable(->TMP_VARIABLE)
+              where(TAC_INSTRUCTION_LIST'list(two_arguments_operation(plus, TMP_VARIABLE, identifier(I), number(0)), TAC_IL) -> U_TAC_IL)
+              where(TAC_INSTRUCTION_LIST'list(two_arguments_operation(plus, identifier(I), identifier(I), number(1)), U_TAC_IL) -> NEW_TAC_IL)
+       'rule' generate_code_for_expression(ident_mm(I), TAC_IL -> NEW_TAC_IL,  TMP_VARIABLE):
+              create_temp_variable(->TMP_VARIABLE)
+              where(TAC_INSTRUCTION_LIST'list(two_arguments_operation(plus, TMP_VARIABLE, identifier(I), number(0)), TAC_IL) -> U_TAC_IL)
+              where(TAC_INSTRUCTION_LIST'list(two_arguments_operation(minus, identifier(I), identifier(I), number(1)), U_TAC_IL) -> NEW_TAC_IL)
+       /* implement rules for tables */
+
+
 
 
