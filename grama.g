@@ -134,11 +134,15 @@
   'rule' declaration(->list(X)): "int" list(->X) ";"
 
 'nonterm' const_list(->ConstList)
-  'rule' const_list(->is(X,Y)): Ident(->X) "=" expr2(->Y)
-  'rule' const_list(->const_list(X,Y,Z)): const_list(->X) "," Ident(->Y) "=" expr2(->Z)
+  'rule' const_list(->const_list(X,nil)):const_object(->X)
+  'rule' const_list(->const_list(X,Y)): const_object(->X) "," const_list(->Y)
+   
+
+'nonterm' const_object(->ConstObject)
+  'rule' const_object(->is(X,Y)): Ident(->X) "=" expr2(->Y)
 
 'nonterm' list(->List)
-  'rule' list(->did(X)): did(->X)
+  'rule' list(->nil   ):
   'rule' list(->list(X,Y)): list(->X) "," did(->Y)
 
 'nonterm' did(->Did)
@@ -335,17 +339,17 @@
 'action' an_close_statement(ClosedStatement)
   'rule' an_close_statement(simple_statement(Simple_Statement)): an_simple_statement(Simple_Statement)
   'rule' an_close_statement(if_else(Expr_,Closed_Statement1,Closed_Statement2)): an_expr(Expr_) an_close_statement(Closed_Statement1) an_close_statement(Closed_Statement2)
-  'rule' an_close_statement(do(Expr_1,Instruction_,Expr_1)): an_expr(Expr_1) an_instruction(Instruction_) an_expr(Expr_1)
+  'rule' an_close_statement(do(Expr_1,Instruction_,Expr_2)): an_expr(Expr_1) an_instruction(Instruction_) an_expr(Expr_2)
   'rule' an_close_statement(loop_closed(Loop_Header,Closed_Statement)): an_loop_header(Loop_Header) an_close_statement(Closed_Statement)
 
 'action' an_loop_header(LoopHeader)
   'rule' an_loop_header(while(Expr_)): an_expr(Expr_)
-  'rule' an_loop_header(for(Expr_For,Expr_For,Expr_For)): an_expr_for(Expr_For) an_expr_for(Expr_For) an_expr_for(Expr_For)
+  'rule' an_loop_header(for(Expr_For1,Expr_For2,Expr_For3)): an_expr_for(Expr_For1) an_expr_for(Expr_For2) an_expr_for(Expr_For3)
 
 'action' an_simple_statement(SimpleStatement)
   'rule' an_simple_statement(nil)
   'rule' an_simple_statement(goto(Ident)): an_ident(Ident)
-  'rule' an_simple_statement(simple_statement(Ident)): an_simple_statement(Ident)
+  'rule' an_simple_statement(simple_statement(Ident)): an_ident(Ident)
   'rule' an_simple_statement(return(Expr_)): an_expr(Expr_)
   'rule' an_simple_statement(expr(Expr_)): an_expr(Expr_)
   'rule' an_simple_statement(block(Block_)): an_block(Block_)
