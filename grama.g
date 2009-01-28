@@ -17,7 +17,7 @@
 
 'type' ConstList
   nil 
-  const_list(Expr, ConstList)
+  list(Expr, ConstList)
 
 'type' List
   nil
@@ -86,8 +86,8 @@
   'rule' declaration(->list(X)): "int" list(->X) ";"
 
 'nonterm' const_list(->ConstList)
-  'rule' const_list(->const_list(X,nil)):const_object(->X)
-  'rule' const_list(->const_list(X,Y)): const_object(->X) "," const_list(->Y)
+  'rule' const_list(->list(X,nil)):const_object(->X)
+  'rule' const_list(->list(X,Y)): const_object(->X) "," const_list(->Y)
    
 
 'nonterm' const_object(->Expr)
@@ -282,8 +282,29 @@
         
  
 'action' generate_code_from_declarations(DeclarationList, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST)
-        /*Implement me*/
-        'rule' generate_code_from_declarations(DL, TAC_IL-> TAC_IL)
+        'rule' generate_code_from_declarations(declaration_list(DECL, DECLL), TAC_DL-> NEW_TAC_DL):
+               generate_code_from_declaration(DECL, TAC_DL -> U_TAC_DL)
+               generate_code_from_declarations(DECLL, U_TAC_DL -> NEW_TAC_DL)
+        'rule' generate_code_from_declarations(nil, TAC_DL -> TAC_DL)
+
+'action' generate_code_from_declaration(Declaration, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST)
+        'rule' generate_code_from_declaration(list(LIST), TAC_DL -> NEW_TAC_DL)
+               generate_code_from_declaration_list(LIST, TAC_DL -> NEW_TAC_DL)
+        'rule' generate_code_from_declaration(const_list(CLIST), TAC_DL -> NEW_TAC_DL)
+               generate_code_from_declaration_const_list(CLIST, TAC_DL -> NEW_TAC_DL)
+
+'action' generate_code_from_declaration_list(List, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST)
+        'rule' generate_code_from_declaration_list(list(EXPR, L), TAC_DL -> NEW_TAC_DL)
+               generate_code_for_expression(EXPR, TAC_DL -> U_TAC_DL, _)
+               generate_code_from_declaration_list(L, U_TAC_DL -> NEW_TAC_DL)
+        'rule' generate_code_from_declaration_list(nil, TAC_DL -> TAC_DL)
+
+'action' generate_code_from_declaration_const_list(ConstList, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST)
+        'rule' generate_code_from_declaration_const_list(list(EXPR, CL), TAC_DL -> NEW_TAC_DL)
+               generate_code_for_expression(EXPR, TAC_DL -> U_TAC_DL, _)
+               generate_code_from_declaration_const_list(CL, U_TAC_DL -> NEW_TAC_DL)
+        'rule' generate_code_from_declaration_const_list(nil, TAC_DL -> TAC_DL)
+
 
 'action' generate_code_from_instructions(InstructionList, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST)
         'rule' generate_code_from_instructions(instruction_list(Ins,InsList), TAC_IL -> NEW_TAC_IL):
