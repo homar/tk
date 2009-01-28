@@ -39,36 +39,19 @@
   instruction_list(Instruction,InstructionList)
   nil
 
-'type' Block
-  block(DeclarationList,InstructionList)
-
 'type' Instruction
-  instruction_open(OpenStatement)
-  instruction_close(ClosedStatement)
-
-'type' OpenStatement
   if(Expr,Instruction)
-  if_else(Expr,ClosedStatement,OpenStatement)
-  loop_open(LoopHeader,OpenStatement)
-
-'type' ClosedStatement
-  simple_statement(SimpleStatement)
-  if_else(Expr,ClosedStatement,ClosedStatement)
-  do(Expr,Instruction,Expr)
-  loop_closed(LoopHeader,ClosedStatement)
-
-'type' LoopHeader
-  while(Expr)
-  for(Expr,Expr,Expr)
-
-'type' SimpleStatement
+  if_else(Expr,Instruction,Instruction)
+  while(Expr, Instruction)
+  for(Expr,Expr,Expr, Instruction)
+  do(Instruction,Expr)
   nil
   goto(IDENT)
   label(IDENT)
   return
   expr(Expr)
-  block(Block)
-
+  block(DeclarationList,InstructionList)
+  
 'type' Expr
   nil
   coma(Expr, Expr)
@@ -133,29 +116,27 @@
   'rule' instruction_list(->instruction_list(X,Y)): instruction(->X) instruction_list(->Y)
   'rule' instruction_list(->nil):
 
-'nonterm' block(->Block)
+'nonterm' block(->Instruction)
   'rule' block(->block(X,Y)): "{" declaration_list(->X) instruction_list(->Y) "}" 
 
 'nonterm' instruction(->Instruction)
-  'rule' instruction(->instruction_open(X)): open_statement(->X)
-  'rule' instruction(->instruction_close(X)): closed_statement(->X)
+  'rule' instruction(->X): open_statement(->X)
+  'rule' instruction(->X): closed_statement(->X)
 
-'nonterm' open_statement(->OpenStatement)
+'nonterm' open_statement(->Instruction)
   'rule' open_statement(->if(X,Y)): "if" "(" expr(->X) ")" instruction(->Y) 
   'rule' open_statement(->if_else(X,Y,Z)): "if" "(" expr(->X) ")" closed_statement(->Y) "else" open_statement(->Z) 
-  'rule' open_statement(->loop_open(X,Y)): loop_header(->X) open_statement(->Y)
+  'rule' open_statement(->while(X,Y)): "while" "(" expr(->X) ")" open_statement(->Y)   
+  'rule' open_statement(->for(X,Y,Z,U)): "for" "(" expr_for(->X) ";" expr_for(->Y) ";" expr_for(->Z) ")" open_statement(->U)
 
-'nonterm' closed_statement(->ClosedStatement)
-  'rule' closed_statement(->simple_statement(X)): simple_statement(->X)
+'nonterm' closed_statement(->Instruction)
+  'rule' closed_statement(->X): simple_statement(->X)
   'rule' closed_statement(->if_else(X,Y,Z)): "if" "(" expr(->X) ")" closed_statement(->Y) "else" closed_statement(->Z) 
-  'rule' closed_statement(->do(X,Y,Z)): "do" "(" expr(->X) ")" instruction(->Y) "while" "(" expr(->Z) ")"
-  'rule' closed_statement(->loop_closed(X,Y)): loop_header(->X) closed_statement(->Y)
-
-'nonterm' loop_header(->LoopHeader)
-  'rule' loop_header(->while(X)): "while" "(" expr(->X) ")"
-  'rule' loop_header(->for(X,Y,Z)): "for" "(" expr_for(->X) ";" expr_for(->Y) ";" expr_for(->Z) ")"
+  'rule' closed_statement(->do(Y,Z)): "do" instruction(->Y) "while" "(" expr(->Z) ")"
+  'rule' closed_statement(->while(X,Y)): "while" "(" expr(->X) ")" closed_statement(->Y)
+  'rule' closed_statement(->for(X,Y,Z,U)): "for" "(" expr_for(->X) ";" expr_for(->Y) ";" expr_for(->Z) ")" closed_statement(->U)
    
-'nonterm' simple_statement(->SimpleStatement)
+'nonterm' simple_statement(->Instruction)
   'rule' simple_statement(->nil): "break" ";"
   'rule' simple_statement(->nil): "continue" ";"
   'rule' simple_statement(->goto(X)): "goto" Ident(->X) ";"
@@ -163,7 +144,7 @@
   'rule' simple_statement(->return): "return" ";"
   'rule' simple_statement(->expr(X)): expr(->X) ";"
   'rule' simple_statement(->nil): ";"
-  'rule' simple_statement(->block(X)): block(->X)
+  'rule' simple_statement(->X): block(->X)
 
 
 'nonterm' expr_for(->Expr)
@@ -291,58 +272,6 @@
 'action' eval_expr(Expr -> INT)
         'rule' eval_expr(E -> 0)
 
-'action' analyze(Program)
-  'rule' analyze(program(Declaration_List,Instruction_List)):InitEnv an_declaration_list(Declaration_List) an_instruction_list(Instruction_List)
-              
-'action' an_declaration_list(DeclarationList)
-  'rule' an_declaration_list(declaration_list(Declaration_,Declaration_List)):an_declaration(Declaration_) an_declaration_list(Declaration_List)
-  'rule' an_declaration_list(nil)
-
-'action' an_declaration(Declaration)
-  'rule' an_declaration(const_list(Const_List)):defineConst(Const_List)
-  'rule' an_declaration(list(List_)):defineVar(List_)
-
-'action' an_instruction_list(InstructionList)
-  'rule' an_instruction_list(instruction_list(Instruction_,Instruction_List)): an_instruction(Instruction_) an_instruction_list(Instruction_List)
-  'rule' an_instruction_list(nil):
-
-'action' an_instruction(Instruction)
-  'rule' an_instruction(instruction_open(OpenStatement_)):an_open_statement(OpenStatement_)
-  'rule' an_instruction(instruction_close(ClosedStatement_)): an_close_statement(ClosedStatement_)
-
-'action' an_open_statement(OpenStatement)
-  'rule' an_open_statement(if(Expr_,Instruction_)): an_expr(Expr_) an_instruction(Instruction_)
-  'rule' an_open_statement(if_else(Expr_,ClosedStatement_,OpenStatement_)): an_expr(Expr_) an_close_statement(ClosedStatement_) an_open_statement(OpenStatement_)
-  'rule' an_open_statement(loop_open(Loop_Header,OpenStatement_)): an_loop_header(Loop_Header) an_open_statement(OpenStatement_)
-
-'action' an_close_statement(ClosedStatement)
-  'rule' an_close_statement(simple_statement(Simple_Statement)): an_simple_statement(Simple_Statement)
-  'rule' an_close_statement(if_else(Expr_,Closed_Statement1,Closed_Statement2)): an_expr(Expr_) an_close_statement(Closed_Statement1) an_close_statement(Closed_Statement2)
-  'rule' an_close_statement(do(Expr_1,Instruction_,Expr_2)): an_expr(Expr_1) an_instruction(Instruction_) an_expr(Expr_2)
-  'rule' an_close_statement(loop_closed(Loop_Header,Closed_Statement)): an_loop_header(Loop_Header) an_close_statement(Closed_Statement)
-
-'action' an_loop_header(LoopHeader)
-  'rule' an_loop_header(while(Expr_)): an_expr(Expr_)
-  'rule' an_loop_header(for(Expr_For1,Expr_For2,Expr_For3)): an_expr(Expr_For1) an_expr(Expr_For2) an_expr(Expr_For3)
-
-'action' an_simple_statement(SimpleStatement)
-  'rule' an_simple_statement(nil)
-  'rule' an_simple_statement(goto(Ident)): an_ident(Ident)
-  'rule' an_simple_statement(label(Ident)): an_ident(Ident)
-  'rule' an_simple_statement(return)
-  'rule' an_simple_statement(expr(Expr_)): an_expr(Expr_)
-  'rule' an_simple_statement(block(Block_)): an_block(Block_)
-
-
-'action' an_block(Block)
-  'rule' an_block(block(Declaration_List,Instruction_List)): an_declaration_list(Declaration_List) an_instruction_list(Instruction_List)
-
-'action' an_ident(IDENT)
-  'rule' an_ident(Ident)
-
-'action' an_expr(Expr)
-  'rule' an_expr(_)
-
 -- Genarating Three Address Code -------------------------------------------------------------------------------------------------------
 --     Three Address Code  Abstract Syntax ---------------------------------------------------------------------------------------------
 'type' TAC_INSTRUCTION_LIST
@@ -403,30 +332,15 @@
         'rule' generate_code_from_instructions(nil, TAC_IL -> TAC_IL)
 
 'action' generate_code_from_instruction(Instruction, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST)
-        'rule' generate_code_from_instruction(instruction_close(CS), TAC_IL -> NEW_TAC_IL):
-               generate_code_for_closed_statement(CS, TAC_IL -> NEW_TAC_IL)
-        'rule' generate_code_from_instruction(instruction_open(OS), TAC_IL -> NEW_TAC_IL):
-               generate_code_for_open_statemant(OS, TAC_IL -> NEW_TAC_IL)
-
-'action' generate_code_for_open_statemant(OpenStatement, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST)
-         /* implement me*/
-        'rule' generate_code_for_open_statemant(OS, TAC_IL -> TAC_IL)
-
-'action' generate_code_for_closed_statement(ClosedStatement, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST)
-        /* implement other closed statement types */
-        'rule' generate_code_for_closed_statement(simple_statement(SS), TAC_IL -> NEW_TAC_IL):
-               generate_code_for_simple_statement(SS, TAC_IL -> NEW_TAC_IL)
-
-'action' generate_code_for_simple_statement(SimpleStatement, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST)
-        'rule' generate_code_for_simple_statement(nil, TAC_IL -> TAC_IL)
-        'rule' generate_code_for_simple_statement(label(I), TAC_IL -> list(label(identifier(I)), TAC_IL))
-        'rule' generate_code_for_simple_statement(goto(I), TAC_IL -> list(if_statement(equal, number(0), number(0), identifier(I)) , TAC_IL))
+        'rule' generate_code_from_instruction(nil, TAC_IL -> TAC_IL)
+        'rule' generate_code_from_instruction(label(I), TAC_IL -> list(label(identifier(I)), TAC_IL))
+        'rule' generate_code_from_instruction(goto(I), TAC_IL -> list(if_statement(equal, number(0), number(0), identifier(I)) , TAC_IL))
         /* we will add a special label at the end of the code , witch will be label for all returns in code */
-        'rule' generate_code_for_simple_statement(return, TAC_IL -> list(if_statement(equal, number(0), number(0), number(0)), TAC_IL))
-        'rule' generate_code_for_simple_statement(block(block(DL, IL)), TAC_IL -> NEW_TAC_IL):
+        'rule' generate_code_from_instruction(return, TAC_IL -> list(if_statement(equal, number(0), number(0), number(0)), TAC_IL))
+        'rule' generate_code_from_instruction(block(DL, IL), TAC_IL -> NEW_TAC_IL):
                generate_code_from_declarations(DL, TAC_IL -> UPDATED_TAC_IL)
                generate_code_from_instructions(IL, UPDATED_TAC_IL -> NEW_TAC_IL)
-        'rule' generate_code_for_simple_statement(expr(E), TAC_IL -> NEW_TAC_IL):
+        'rule' generate_code_from_instruction(expr(E), TAC_IL -> NEW_TAC_IL):
                generate_code_for_expression(E, TAC_IL -> NEW_TAC_IL, EXPR_VALUE) /*EXPR_VALUE - variable which holds results for this expr */
 
 'action' generate_code_for_expression(Expr, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST, ARGUMENT)
@@ -524,7 +438,3 @@
               where(TAC_INSTRUCTION_LIST'list(two_arguments_operation(plus, TMP_VARIABLE, identifier(I), number(0)), TAC_IL) -> U_TAC_IL)
               where(TAC_INSTRUCTION_LIST'list(two_arguments_operation(minus, identifier(I), identifier(I), number(1)), U_TAC_IL) -> NEW_TAC_IL)
        /* implement rules for tables */
-
-
-
-
