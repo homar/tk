@@ -221,6 +221,207 @@
 
 'action' DefMeaning(IDENT, Meaning_list)
 'condition' HasMeaning(IDENT->Meaning_list)
+'action' ErrorI (STRING, IDENT, STRING, POS)
+
+'action' check_declaration_list(DeclarationList)
+  'rule' check_declaration_list(declaration_list(Declaration_,Declaration_List)): 
+            check_declaration(Declaration_)
+            check_declaration_list(Declaration_List)
+  'rule' check_declaration_list(nil)
+
+'action' check_instruction_list(InstructionList)
+  'rule' check_instruction_list(instruction_list(Instruction_,Instruction_List)): 
+            check_instruction(Instruction_)
+            check_instruction_list(Instruction_List)
+  'rule' check_instruction_list(nil)
+
+'action' check_declaration(Declaration)
+  'rule' check_declaration(const_list(Const_List)):
+            check_const_list(Const_List)
+  'rule' check_declaration(list(List_)):
+            check_list(List_)
+
+'action' check_list(List)
+  'rule' check_list(nil)
+  'rule' check_list(list(Expr_,List_)):
+            check_expr_declaration(Expr_)
+            check_list(List_)
+
+'action' check_const_list(ConstList)
+  'rule' check_const_list(nil)
+  'rule' check_const_list(list(Expr_,Const_List)):
+            check_expr_declaration(Expr_)
+            check_const_list(Const_List)
+
+'action' check_expr_declaration(Expr)
+  'rule' check_expr_declaration(ident(Id)):
+            check_id(Id)
+  'rule' check_expr_declaration(is(Id,Expr_)):
+            check_id(Id)
+
+'action' check_id(IDENT)
+  'rule' check_id(Id):
+            HasMeaning(Id->MList)
+            check_meaning_list(MList)
+  'rule' check_id(Id):
+            HasMeaning(Id->MList)
+            CurrentLevel->ThisLev
+            DefMeaning(Id,meaning_list(const(ThisLev,0),MList))
+  'rule' check_id(Id):
+            CurrentLevel->ThisLev
+            DefMeaning(Id,meaning_list(const(ThisLev,0),nil))
+
+'condition' check_meaning_list(Meaning_list)
+  'rule' check_meaning_list(meaning_list(Meaning_,Meaning_List))
+            check_meaning(Meaning_)
+  'rule' check_meaning_list(nil):
+            
+
+'condition' check_meaning(Meaning)
+  'rule' check_meaning(const(Level,B)):
+            CurrentLevel->ThisLevel
+            eq(Level,ThisLevel)
+            my_print("powtorna deklaracja")
+  'rule' check_meaning(var(Level)):
+            CurrentLevel->ThisLevel
+            eq(Level,ThisLevel)
+            my_print("powtorna deklaracja")
+  'rule' check_meaning(tb1(Level,X)):
+            CurrentLevel->ThisLevel
+            eq(Level,ThisLevel)
+            my_print("powtorna deklaracja")
+  'rule' check_meaning(tb2(Level,X,Y)):
+            CurrentLevel->ThisLevel
+            eq(Level,ThisLevel)
+            my_print("powtorna deklaracja")
+  'rule' check_meaning(tb3(Level,X,Y,Z)):
+            CurrentLevel->ThisLevel
+            eq(Level,ThisLevel)
+            my_print("powtorna deklaracja")
+
+            
+
+'action' check_instruction(Instruction)
+  'rule' check_instruction(expr(Expr_)):
+            check_expr(Expr_)
+  'rule' check_instruction(label(Id)): 
+            check_label(Id)
+  'rule' check_instruction(block(Declaration_List,Instruction_List)):
+            CurrentLevel->N
+            CurrentLevel<-N+1
+            check_declaration_list(Declaration_List)
+            check_instruction_list(Instruction_List)
+            CurrentLevel<-N
+
+'action' check_expr(Expr)
+  'rule' check_expr(ident(Id)):
+            check_id_instr(Id)
+  'rule' check_expr(coma(Expr1,Expr2)):
+            check_expr(Expr1)
+            check_expr(Expr2)
+  'rule' check_expr(is(Id,Expr2)):
+            check_id_instr(Id)
+            check_expr(Expr2)
+ 'rule' check_expr(or(Expr1,Expr2)):
+            check_expr(Expr1)
+            check_expr(Expr2)
+ 'rule' check_expr(and(Expr1,Expr2)):
+            check_expr(Expr1)
+            check_expr(Expr2)
+ 'rule' check_expr(same(Expr1,Expr2)):
+            check_expr(Expr1)
+            check_expr(Expr2)
+ 'rule' check_expr(not_same(Expr1,Expr2)):
+            check_expr(Expr1)
+            check_expr(Expr2)
+ 'rule' check_expr(less(Expr1,Expr2)):
+            check_expr(Expr1)
+            check_expr(Expr2)
+ 'rule' check_expr(more(Expr1,Expr2)):
+            check_expr(Expr1)
+            check_expr(Expr2)
+ 'rule' check_expr(same_less(Expr1,Expr2)):
+            check_expr(Expr1)
+            check_expr(Expr2)
+ 'rule' check_expr(same_more(Expr1,Expr2)):
+            check_expr(Expr1)
+            check_expr(Expr2)
+ 'rule' check_expr(plus(Expr1,Expr2)):
+            check_expr(Expr1)
+            check_expr(Expr2)
+ 'rule' check_expr(minus(Expr1,Expr2)):
+            check_expr(Expr1)
+            check_expr(Expr2)
+ 'rule' check_expr(mult(Expr1,Expr2)):
+            check_expr(Expr1)
+            check_expr(Expr2)
+ 'rule' check_expr(div(Expr1,Expr2)):
+            check_expr(Expr1)
+            check_expr(Expr2)
+ 'rule' check_expr(mod(Expr1,Expr2)):
+            check_expr(Expr1)
+            check_expr(Expr2)
+ 'rule' check_expr(negation(Expr2)):
+            check_expr(Expr2)
+ 'rule' check_expr(ident_mm(ID)):
+            check_id_instr(ID)
+ 'rule' check_expr(ident_pp(ID)):
+            check_id_instr(ID)
+ 'rule' check_expr(mm_ident(ID)):
+            check_id_instr(ID)
+ 'rule' check_expr(pp_ident(ID)):
+            check_id_instr(ID)
+
+
+
+
+
+
+
+
+
+
+
+ 
+'action' check_id_instr(IDENT)
+  'rule' check_id_instr(Id):
+            HasMeaning(Id->MList)
+            check_id_meaning_list(MList)
+  'rule' check_id_instr(Id):
+            my_print("zmienna nie zadeklarowana")
+
+'condition' check_id_meaning_list(Meaning_list)
+  'rule' check_id_meaning_list(meaning_list(Meaning_,Meaning_List)):
+           (|check_id_meaning(Meaning_)
+            || 
+            check_id_meaning_list(Meaning_List)
+            |)
+
+'condition' check_id_meaning(Meaning)
+  'rule' check_id_meaning(const(Level,B)):
+            CurrentLevel->ThisLevel
+            le(Level,ThisLevel)
+  'rule' check_id_meaning(var(Level)):
+            CurrentLevel->ThisLevel
+            le(Level,ThisLevel)
+  'rule' check_id_meaning(tb1(Level,X)):
+            CurrentLevel->ThisLevel
+            le(Level,ThisLevel)
+  'rule' check_id_meaning(tb2(Level,X,T)):
+            CurrentLevel->ThisLevel
+            le(Level,ThisLevel)
+  'rule' check_id_meaning(tb3(Level,X,Y,R)):
+            CurrentLevel->ThisLevel
+            le(Level,ThisLevel)
+            
+'action' check_label(IDENT)
+  'rule' check_label(Id):
+            HasMeaning(Id->MList)
+            my_print("taki label juz istnieje")
+  'rule' check_label(Id):
+            CurrentLevel->ThisLev
+            DefMeaning(Id, meaning_list(tb1(ThisLev,0),nil))
+
 
 'action' InitEnv
   'rule' InitEnv: CurrentLevel <- 0
@@ -259,7 +460,10 @@
        'rule' generate_three_address_code(program(DL, IL) -> 
                    list(one_argument_operation(not, temp_variable(0), number(0)), list(label(number(0)), TAC_IL))):
               init_code_generation
-              generate_code_from_declarations(DL, nil -> TAC_DL)
+                InitEnv
+                check_declaration_list(DL)
+                check_instruction_list(IL)
+             generate_code_from_declarations(DL, nil -> TAC_DL)
               generate_code_from_instructions(IL, TAC_DL -> TAC_IL)
 
 'action' init_code_generation
