@@ -49,6 +49,8 @@
   goto(IDENT)
   label(IDENT)
   return
+  break
+  continue
   expr(Expr)
   block(DeclarationList,InstructionList)
   
@@ -137,8 +139,8 @@
   'rule' closed_statement(->for(X,Y,Z,U)): "for" "(" expr_for(->X) ";" expr_for(->Y) ";" expr_for(->Z) ")" closed_statement(->U)
    
 'nonterm' simple_statement(->Instruction)
-  'rule' simple_statement(->nil): "break" ";"
-  'rule' simple_statement(->nil): "continue" ";"
+  'rule' simple_statement(->break): "break" ";"
+  'rule' simple_statement(->continue): "continue" ";"
   'rule' simple_statement(->goto(X)): "goto" Ident(->X) ";"
   'rule' simple_statement(->label(X)): Ident(->X) ":"
   'rule' simple_statement(->return): "return" ";"
@@ -296,6 +298,8 @@
 
 --     Translation Methods ------------------------------------------------------------------------------------------------------------
 
+'var' BreakLabel: INT
+'var' ContinueLabel: INT
 'var' LabelNumber: INT
 'var' TempVariableID: INT
 
@@ -310,6 +314,8 @@
          'rule' init_code_generation:
                 LabelNumber <- 1
                 TempVariableID <- 0
+                BreakLabel <- -1
+                ContinueLabel <- -1
 
 'action' get_new_temp_variable_id(-> INT)
        'rule' get_new_temp_variable_id(-> ID):
@@ -355,6 +361,30 @@
                generate_code_from_instruction(INSTR1, UUUUU_TAC_IL -> UUUUUU_TAC_IL)
                where(TAC_INSTRUCTION_LIST'list(label(number(LN2)), UUUUUU_TAC_IL) -> NEW_TAC_IL)
 
+        'rule' generate_code_from_instruction(while(EXPR, INSTR), TAC_IL -> NEW_TAC_IL)
+               get_new_label_number(-> LN1)
+               get_new_label_number(-> LN2)
+               BreakLabel -> OldBreakLabel 
+               BreakLabel <- LN2
+               ContinueLabel -> OldContinueLabel
+               ContinueLabel <- LN1
+               where(TAC_INSTRUCTION_LIST'list(label(number(LN1)), TAC_IL) -> U_TAC_IL)
+               generate_code_for_expression(negation(EXPR), U_TAC_IL -> UU_TAC_IL, TMP_VARIABLE)
+               where(TAC_INSTRUCTION_LIST'list(if_statement(and, TMP_VARIABLE, number(1), number(LN2)), UU_TAC_IL) -> UUU_TAC_IL)
+               generate_code_from_instruction(INSTR, UUU_TAC_IL -> UUUU_TAC_IL)
+               where(TAC_INSTRUCTION_LIST'list(if_statement(equal, number(0), number(0), number(LN1)), UUUU_TAC_IL) -> UUUUU_TAC_IL)
+               where(TAC_INSTRUCTION_LIST'list(label(number(LN2)), UUUUU_TAC_IL) -> NEW_TAC_IL)
+               BreakLabel <- OldBreakLabel
+               ContinueLabel <- OldContinueLabel
+        
+        'rule' generate_code_from_instruction(break, TAC_IL ->
+                   list(if_statement(equal, number(0), number(0), number(BL)), TAC_IL))
+               BreakLabel -> BL
+
+        'rule' generate_code_from_instruction(continue, TAC_IL ->
+                  list(if_statement(equal, number(0), number(0), number(CL)), TAC_IL))
+               ContinueLabel -> CL
+               
         'rule' generate_code_from_instruction(nil, TAC_IL -> TAC_IL)
         'rule' generate_code_from_instruction(label(I), TAC_IL -> list(label(identifier(I)), TAC_IL))
         'rule' generate_code_from_instruction(goto(I), TAC_IL -> list(if_statement(equal, number(0), number(0), identifier(I)) , TAC_IL))
