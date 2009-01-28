@@ -316,6 +316,11 @@
               TempVariableID -> ID
               TempVariableID <- ( ID + 1)
 
+'action' get_new_label_number(->INT)
+       'rule' get_new_label_number(->LN):
+              LabelNumber -> LN
+              LabelNumber <- ( LN + 1)
+
 'action' create_temp_variable(-> ARGUMENT)
         'rule' create_temp_variable(-> temp_variable(ID)):
                get_new_temp_variable_id(->ID)
@@ -332,6 +337,24 @@
         'rule' generate_code_from_instructions(nil, TAC_IL -> TAC_IL)
 
 'action' generate_code_from_instruction(Instruction, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST)
+        'rule' generate_code_from_instruction(if(EXPR, INSTR), TAC_IL -> NEW_TAC_IL):
+               generate_code_for_expression(negation(EXPR), TAC_IL -> U_TAC_IL, TMP_VARIABLE)
+               get_new_label_number(->LN)
+               where(TAC_INSTRUCTION_LIST'list(if_statement(and, TMP_VARIABLE, number(1), number(LN)), U_TAC_IL) -> UU_TAC_IL)
+               generate_code_from_instruction(INSTR, UU_TAC_IL -> UUU_TAC_IL)
+               where(TAC_INSTRUCTION_LIST'list(label(number(LN)), UUU_TAC_IL) -> NEW_TAC_IL)
+
+        'rule' generate_code_from_instruction(if_else(EXPR, INSTR1, INSTR2), TAC_IL -> NEW_TAC_IL)
+               get_new_label_number(->LN1)
+               get_new_label_number(->LN2)
+               generate_code_for_expression(negation(EXPR), TAC_IL -> U_TAC_IL, TMP_VARIABLE)
+               where(TAC_INSTRUCTION_LIST'list(if_statement(and, TMP_VARIABLE, number(1), number(LN1)), U_TAC_IL) -> UU_TAC_IL)
+               generate_code_from_instruction(INSTR1, UU_TAC_IL -> UUU_TAC_IL)
+               where(TAC_INSTRUCTION_LIST'list(if_statement(equal, number(0), number(0), number(LN2)), UUU_TAC_IL) -> UUUU_TAC_IL)
+               where(TAC_INSTRUCTION_LIST'list(label(number(LN1)), UUUU_TAC_IL) -> UUUUU_TAC_IL)
+               generate_code_from_instruction(INSTR1, UUUUU_TAC_IL -> UUUUUU_TAC_IL)
+               where(TAC_INSTRUCTION_LIST'list(label(number(LN2)), UUUUUU_TAC_IL) -> NEW_TAC_IL)
+
         'rule' generate_code_from_instruction(nil, TAC_IL -> TAC_IL)
         'rule' generate_code_from_instruction(label(I), TAC_IL -> list(label(identifier(I)), TAC_IL))
         'rule' generate_code_from_instruction(goto(I), TAC_IL -> list(if_statement(equal, number(0), number(0), identifier(I)) , TAC_IL))
@@ -438,3 +461,5 @@
               where(TAC_INSTRUCTION_LIST'list(two_arguments_operation(plus, TMP_VARIABLE, identifier(I), number(0)), TAC_IL) -> U_TAC_IL)
               where(TAC_INSTRUCTION_LIST'list(two_arguments_operation(minus, identifier(I), identifier(I), number(1)), U_TAC_IL) -> NEW_TAC_IL)
        /* implement rules for tables */
+
+
