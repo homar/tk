@@ -350,7 +350,7 @@
                generate_code_from_instruction(INSTR, UU_TAC_IL -> UUU_TAC_IL)
                where(TAC_INSTRUCTION_LIST'list(label(number(LN)), UUU_TAC_IL) -> NEW_TAC_IL)
 
-        'rule' generate_code_from_instruction(if_else(EXPR, INSTR1, INSTR2), TAC_IL -> NEW_TAC_IL)
+        'rule' generate_code_from_instruction(if_else(EXPR, INSTR1, INSTR2), TAC_IL -> NEW_TAC_IL):
                get_new_label_number(->LN1)
                get_new_label_number(->LN2)
                generate_code_for_expression(negation(EXPR), TAC_IL -> U_TAC_IL, TMP_VARIABLE)
@@ -361,7 +361,7 @@
                generate_code_from_instruction(INSTR1, UUUUU_TAC_IL -> UUUUUU_TAC_IL)
                where(TAC_INSTRUCTION_LIST'list(label(number(LN2)), UUUUUU_TAC_IL) -> NEW_TAC_IL)
 
-        'rule' generate_code_from_instruction(while(EXPR, INSTR), TAC_IL -> NEW_TAC_IL)
+        'rule' generate_code_from_instruction(while(EXPR, INSTR), TAC_IL -> NEW_TAC_IL):
                get_new_label_number(-> LN1)
                get_new_label_number(-> LN2)
                BreakLabel -> OldBreakLabel 
@@ -376,13 +376,48 @@
                where(TAC_INSTRUCTION_LIST'list(label(number(LN2)), UUUUU_TAC_IL) -> NEW_TAC_IL)
                BreakLabel <- OldBreakLabel
                ContinueLabel <- OldContinueLabel
+
+        'rule' generate_code_from_instruction(do(INSTR, EXPR), TAC_IL -> NEW_TAC_IL):
+               get_new_label_number(-> LN1)
+               get_new_label_number(-> LN2)
+               BreakLabel -> OldBreakLabel 
+               BreakLabel <- LN2
+               ContinueLabel -> OldContinueLabel
+               ContinueLabel <- LN1
+               where(TAC_INSTRUCTION_LIST'list(label(number(LN1)), TAC_IL) -> U_TAC_IL)
+               generate_code_from_instruction(INSTR, U_TAC_IL -> UU_TAC_IL)
+               generate_code_for_expression(EXPR, UU_TAC_IL -> UUU_TAC_IL, TMP_VARIABLE)
+               where(TAC_INSTRUCTION_LIST'list(if_statement(and, TMP_VARIABLE, number(1), number(LN1)), UUU_TAC_IL) -> UUUU_TAC_IL)
+               where(TAC_INSTRUCTION_LIST'list(label(number(LN2)), UUUU_TAC_IL) -> NEW_TAC_IL)
+               BreakLabel <- OldBreakLabel
+               ContinueLabel <- OldContinueLabel
+-- ' apostrophe for good syntax highlighting
+
+        'rule' generate_code_from_instruction(for(EXPR1, EXPR2, EXPR3, INSTR), TAC_IL -> NEW_TAC_IL)
+               get_new_label_number(-> LN1)
+               get_new_label_number(-> LN2)
+               BreakLabel -> OldBreakLabel 
+               BreakLabel <- LN2
+               ContinueLabel -> OldContinueLabel
+               ContinueLabel <- LN1
+               generate_code_for_expression(EXPR1, TAC_IL -> U_TAC_IL, _)
+               where(TAC_INSTRUCTION_LIST'list(label(number(LN1)), U_TAC_IL) -> UU_TAC_IL)
+               generate_code_for_expression(negation(EXPR2), UU_TAC_IL -> UUU_TAC_IL, TMP_VARIABLE)
+               where(TAC_INSTRUCTION_LIST'list(if_statement(and, TMP_VARIABLE, number(1), number(LN2)), UUU_TAC_IL) -> UUUU_TAC_IL)
+               generate_code_from_instruction(INSTR, UUUU_TAC_IL -> UUUUU_TAC_IL)
+               generate_code_for_expression(EXPR3, UUUUU_TAC_IL -> UUUUUU_TAC_IL, _)
+               where(TAC_INSTRUCTION_LIST'list(if_statement(equal, number(0), number(0), number(LN1)), UUUUUU_TAC_IL) -> UUUUUUU_TAC_IL)
+               where(TAC_INSTRUCTION_LIST'list(label(number(LN2)), UUUUUUU_TAC_IL) -> NEW_TAC_IL)
+               BreakLabel <- OldBreakLabel
+               ContinueLabel <- OldContinueLabel
+        
         
         'rule' generate_code_from_instruction(break, TAC_IL ->
-                   list(if_statement(equal, number(0), number(0), number(BL)), TAC_IL))
+                   list(if_statement(equal, number(0), number(0), number(BL)), TAC_IL)):
                BreakLabel -> BL
 
         'rule' generate_code_from_instruction(continue, TAC_IL ->
-                  list(if_statement(equal, number(0), number(0), number(CL)), TAC_IL))
+                  list(if_statement(equal, number(0), number(0), number(CL)), TAC_IL)):
                ContinueLabel -> CL
                
         'rule' generate_code_from_instruction(nil, TAC_IL -> TAC_IL)
