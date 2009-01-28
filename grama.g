@@ -2,8 +2,7 @@
        generate_three_address_code(P -> TAC)
        reverse_tac_instructions_list(nil, TAC -> RTAC)
        create_label_row_number_map(RTAC, 0, nil -> L_N_MAP)
-       print(RTAC)
-       print(L_N_MAP)
+       print_tac(RTAC, 0, L_N_MAP)
 
 'type' IDENT
 
@@ -257,7 +256,8 @@
 
 /* at the end of the code we are adding special label for all return statements, this label is recognized by 0 value */
 'action' generate_three_address_code(Program -> TAC_INSTRUCTION_LIST)
-       'rule' generate_three_address_code(program(DL, IL) -> list(label(number(0)), TAC_IL)):
+       'rule' generate_three_address_code(program(DL, IL) -> 
+                   list(one_argument_operation(not, temp_variable(0), number(0)), list(label(number(0)), TAC_IL))):
               init_code_generation
               generate_code_from_declarations(DL, nil -> TAC_DL)
               generate_code_from_instructions(IL, TAC_DL -> TAC_IL)
@@ -519,9 +519,68 @@
     
 'action' create_label_row_number_map(TAC_INSTRUCTION_LIST, INT, LABEL_ROW_MAP-> LABEL_ROW_MAP)
        'rule' create_label_row_number_map(list(label(ARG), TACL), ROW_NUMBER, MAP -> NEW_MAP)
-              create_label_row_number_map(TACL, ROW_NUMBER + 1, list(entity(ARG, ROW_NUMBER),MAP) -> NEW_MAP)
+              create_label_row_number_map(TACL, ROW_NUMBER, list(entity(ARG, ROW_NUMBER),MAP) -> NEW_MAP)
        'rule' create_label_row_number_map(list(TACI, TACL), ROW_NUMBER, MAP -> NEW_MAP)
               create_label_row_number_map(TACL, ROW_NUMBER + 1, MAP -> NEW_MAP)
        'rule' create_label_row_number_map(nil, ROW_NUMBER, MAP -> MAP)
+
+-- Action To Print Three Address Code To Output -----------------------------------------------------------------------------------------------
+'action' print_tac(TAC_INSTRUCTION_LIST, INT, LABEL_ROW_MAP)
+       'rule' print_tac(list(label(_), TACL), ROW_NUMBER, LABEL_ROW_MAP)
+              print_tac(TACL, ROW_NUMBER, LABEL_ROW_MAP)
+       'rule' print_tac(list(TACI, TACL),ROW_NUMBER, LABEL_ROW_MAP)
+              my_int_print(ROW_NUMBER) my_print(" ")
+              print_tac_instruction(TACI, LABEL_ROW_MAP)
+              my_println(" ")
+              print_tac(TACL, ROW_NUMBER + 1, LABEL_ROW_MAP)
+       'rule' print_tac(nil, ROW_NUMBER, LABEL_ROW_MAP)
+
+'action' print_tac_instruction(TAC_INSTRUCTION, LABEL_ROW_MAP)
+       'rule' print_tac_instruction(two_arguments_operation(O, A1, A2, A3), LM):
+              print_operator(O) my_print(" ") print_argument(A1) my_print(" ") print_argument(A2) my_print(" ") print_argument(A3)
+       'rule' print_tac_instruction(one_argument_operation(O, A1, A2), LM):     
+              print_operator(O) my_print(" ") print_argument(A1) my_print(" ") print_argument(A2)
+       'rule' print_tac_instruction(table_reading(A1, A2, A3), LM):
+              my_print("tout") my_print(" ") print_argument(A1) my_print(" ") print_argument(A2) my_print(" ") print_argument(A3)
+       'rule' print_tac_instruction(table_writing(A1, A2, A3), LM):
+              my_print("tin") my_print(" ") print_argument(A1) my_print(" ") print_argument(A2) my_print(" ") print_argument(A3)
+       'rule' print_tac_instruction(if_statement(O, A1, A2, A3), LM):
+              get_label_row(A3, LM -> N)
+              my_print("if") print_operator(O) my_print(" ") print_argument(A1) my_print(" ") print_argument(A2)  my_print(" ") my_int_print(N)
+
+'action' print_operator(OPERATOR)
+       'rule' print_operator(plus): my_print("+")
+       'rule' print_operator(minus): my_print("-")
+       'rule' print_operator(multi): my_print("*")
+       'rule' print_operator(div): my_print("/")
+       'rule' print_operator(mod): my_print("%")
+       'rule' print_operator(equal): my_print("==")
+       'rule' print_operator(nequal): my_print("!=")
+       'rule' print_operator(less): my_print("<")
+       'rule' print_operator(greater): my_print(">")
+       'rule' print_operator(ge): my_print(">=")
+       'rule' print_operator(le): my_print("<=")
+       'rule' print_operator(and): my_print("&&")
+       'rule' print_operator(or): my_print("||")
+       'rule' print_operator(not): my_print("!")
+
+'action' print_argument(ARGUMENT)
+       'rule' print_argument(number(N)): my_int_print(N)
+       'rule' print_argument(identifier(I)): id_to_string(I -> S) my_print(S)
+       'rule' print_argument(temp_variable(N)): my_print("mem") my_int_print(N)
+
+'action' get_label_row(ARGUMENT, LABEL_ROW_MAP -> INT)
+       'rule' get_label_row(ARG1, list(entity(ARG2, N), LM) -> N):
+              eq(ARG1, ARG2)
+       'rule' get_label_row(ARG, list(_, LM) -> N):
+              get_label_row(ARG, LM -> N)
+
+--Interface to writing method -----------------------------------------------------------------------------------------------------------------
+
+'action' my_print(STRING)
+'action' my_println(STRING)
+'action' my_int_print(INT)
+'action' my_int_println(INT)
+'action' id_to_string(IDENT -> STRING)
               
 

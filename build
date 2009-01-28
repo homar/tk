@@ -20,6 +20,8 @@ $LEX gen.l
 
 $YACC -v gen.y
 
+$CC -c ../my_print.c
+
 $CC -o $PLIK \
    $PLIK.c \
    lex.yy.c \
@@ -27,5 +29,6 @@ $CC -o $PLIK \
    $LIB/errmsg.o \
    $LIB/main.o \
    $LIB/idents.o \
+   my_print.o \
    $GRTS
 
