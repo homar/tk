@@ -17,18 +17,11 @@
 
 'type' ConstList
   nil 
-  const_list(ConstObject, ConstList)
-
-'type' ConstObject
-  is(IDENT, Expr)
+  const_list(Expr, ConstList)
 
 'type' List
   nil
-  list(Did, List)
-
-'type' Did
-  did1(Tab)
-  did2(IDENT)
+  list(Expr, List)
 
 'type' Tab
   tab1(IDENT,Expr)
@@ -97,17 +90,17 @@
   'rule' const_list(->const_list(X,Y)): const_object(->X) "," const_list(->Y)
    
 
-'nonterm' const_object(->ConstObject)
+'nonterm' const_object(->Expr)
   'rule' const_object(->is(X,Y)): Ident(->X) "=" expr2(->Y)
 
 'nonterm' list(->List)
-  'rule' list(->list(X, nil)): did(->X)
-  'rule' list(->list(X,Y)): did(->X) "," list(->Y)
+  'rule' list(->list(X, nil)): declaration_element(->X)
+  'rule' list(->list(X,Y)): declaration_element(->X) "," list(->Y)
 
-'nonterm' did(->Did)
-  'rule' did(->did1(X)): tab(->X)
-  'rule' did(->did2(X)): Ident(->X)
-  'rule' did(->did2(X)): Ident(->X) "=" expr2(->Y)
+'nonterm' declaration_element(->Expr)
+  'rule' declaration_element(->tab(X)): tab(->X)
+  'rule' declaration_element(->ident(X)): Ident(->X)
+  'rule' declaration_element(->is(X,Y)): Ident(->X) "=" expr2(->Y)
 
 'nonterm' tab(->Tab)
   'rule' tab(->tab1(X,Y)):  Ident(->X) "[" expr(->Y) "]"
@@ -208,7 +201,7 @@
 
 'token' Ident(->IDENT)
 'token' Number(->INT)
-
+-- Semantic checking -----------------------------------------------------------------------------------------------------------------
 
 'type' Meaning
   const(INT,INT)
@@ -229,50 +222,6 @@
 
 'action' InitEnv
   'rule' InitEnv: CurrentLevel <- 0
-
-'action' defineConst(ConstList)
-       'rule' defineConst(const_list(is(Id, Expr_), Const_List)):
-           CurrentLevel -> ThisLevel
-           eval_expr(Expr_ -> Value)
-           HasMeaning(Id -> Meaning_list)
-           DefMeaning(Id, meaning_list(const(Value, ThisLevel), Meaning_list))
-           defineConst(Const_List)         
-       'rule' defineConst(nil)
-
-
-'action' defineVar(List)
-  'rule' defineVar(list(Did, Did_list)): 
-         defineVar(Did_list) 
-         defineDid(Did)
-  'rule' defineVar(nil)
-
-
-'action' defineDid(Did)
-  'rule' defineDid(did1(tab1(Ident, Expr_))):
-           CurrentLevel->ThisLevel
-           HasMeaning(Ident-> Meaning_list)
-           eval_expr(Expr_ -> Value)
-           DefMeaning(Ident,meaning_list(tb1(Value,ThisLevel),Meaning_list))
-  'rule' defineDid(did1(tab2(Ident, Expr1, Expr2))):
-           CurrentLevel->ThisLevel
-           HasMeaning(Ident->Meaning_list)
-           eval_expr(Expr1 -> Value1)
-           eval_expr(Expr2 -> Value2)
-           DefMeaning(Ident,meaning_list(tb2(Value1,Value2,ThisLevel),Meaning_list))
-  'rule' defineDid(did1(tab3(Ident, Expr1, Expr2, Expr3))):
-           CurrentLevel->ThisLevel
-           HasMeaning(Ident->Meaning_list)
-           eval_expr(Expr1 -> Value1)
-           eval_expr(Expr2 -> Value2)
-           eval_expr(Expr3 -> Value3)
-           DefMeaning(Ident,meaning_list(tb3(Value1,Value2,Value3,ThisLevel),Meaning_list))
-  'rule' defineDid(did2(Ident)):
-           CurrentLevel->ThisLevel
-           HasMeaning(Ident->Meaning_list)
-           DefMeaning(Ident,meaning_list(var(ThisLevel),Meaning_list)) 
-
-'action' eval_expr(Expr -> INT)
-        'rule' eval_expr(E -> 0)
 
 -- Genarating Three Address Code -------------------------------------------------------------------------------------------------------
 --     Three Address Code  Abstract Syntax ---------------------------------------------------------------------------------------------
@@ -432,6 +381,7 @@
                generate_code_for_expression(E, TAC_IL -> NEW_TAC_IL, EXPR_VALUE) /*EXPR_VALUE - variable which holds results for this expr */
 
 'action' generate_code_for_expression(Expr, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST, ARGUMENT)
+       'rule' generate_code_for_expression(nil, TAC_IL -> TAC_IL, number(0))
        'rule' generate_code_for_expression(coma(EXPR1, EXPR2), TAC_IL -> NEW_TAC_IL, EXPR_VALUE):
               generate_code_for_expression(EXPR1, TAC_IL -> U_TAC_IL, _)
               generate_code_for_expression(EXPR2, U_TAC_IL -> NEW_TAC_IL, EXPR_VALUE)

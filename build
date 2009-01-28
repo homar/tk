@@ -3,10 +3,10 @@
 set -e
 set -x
 
-GENTLE=../../gentle/gentle
-GRTS=../../gentle/grts.o
-REFLEX=../../reflex/reflex
-LIB=../../lib
+GENTLE=../gentle-97/gentle/gentle
+GRTS=../gentle-97/gentle/grts.o
+REFLEX=../gentle-97/reflex/reflex
+LIB=../gentle-97/lib
 LEX=lex
 YACC=yacc
 CC=cc
