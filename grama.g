@@ -1,6 +1,9 @@
 'root' program(->P)
        generate_three_address_code(P -> TAC)
-      print(TAC)
+       reverse_tac_instructions_list(nil, TAC -> RTAC)
+       create_label_row_number_map(RTAC, 0, nil -> L_N_MAP)
+       print(RTAC)
+       print(L_N_MAP)
 
 'type' IDENT
 
@@ -288,19 +291,19 @@
         'rule' generate_code_from_declarations(nil, TAC_DL -> TAC_DL)
 
 'action' generate_code_from_declaration(Declaration, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST)
-        'rule' generate_code_from_declaration(list(LIST), TAC_DL -> NEW_TAC_DL)
+        'rule' generate_code_from_declaration(list(LIST), TAC_DL -> NEW_TAC_DL):
                generate_code_from_declaration_list(LIST, TAC_DL -> NEW_TAC_DL)
-        'rule' generate_code_from_declaration(const_list(CLIST), TAC_DL -> NEW_TAC_DL)
+        'rule' generate_code_from_declaration(const_list(CLIST), TAC_DL -> NEW_TAC_DL):
                generate_code_from_declaration_const_list(CLIST, TAC_DL -> NEW_TAC_DL)
 
 'action' generate_code_from_declaration_list(List, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST)
-        'rule' generate_code_from_declaration_list(list(EXPR, L), TAC_DL -> NEW_TAC_DL)
+        'rule' generate_code_from_declaration_list(list(EXPR, L), TAC_DL -> NEW_TAC_DL):
                generate_code_for_expression(EXPR, TAC_DL -> U_TAC_DL, _)
                generate_code_from_declaration_list(L, U_TAC_DL -> NEW_TAC_DL)
         'rule' generate_code_from_declaration_list(nil, TAC_DL -> TAC_DL)
 
 'action' generate_code_from_declaration_const_list(ConstList, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST)
-        'rule' generate_code_from_declaration_const_list(list(EXPR, CL), TAC_DL -> NEW_TAC_DL)
+        'rule' generate_code_from_declaration_const_list(list(EXPR, CL), TAC_DL -> NEW_TAC_DL):
                generate_code_for_expression(EXPR, TAC_DL -> U_TAC_DL, _)
                generate_code_from_declaration_const_list(CL, U_TAC_DL -> NEW_TAC_DL)
         'rule' generate_code_from_declaration_const_list(nil, TAC_DL -> TAC_DL)
@@ -363,7 +366,7 @@
                ContinueLabel <- OldContinueLabel
 -- ' apostrophe for good syntax highlighting
 
-        'rule' generate_code_from_instruction(for(EXPR1, EXPR2, EXPR3, INSTR), TAC_IL -> NEW_TAC_IL)
+        'rule' generate_code_from_instruction(for(EXPR1, EXPR2, EXPR3, INSTR), TAC_IL -> NEW_TAC_IL):
                get_new_label_number(-> LN1)
                get_new_label_number(-> LN2)
                BreakLabel -> OldBreakLabel 
@@ -498,4 +501,27 @@
               where(TAC_INSTRUCTION_LIST'list(two_arguments_operation(minus, identifier(I), identifier(I), number(1)), U_TAC_IL) -> NEW_TAC_IL)
        /* implement rules for tables */
 
+-- Action Wchich Reverse list of instruction fo future actians --------------------------------------------------------------------------------
+
+'action' reverse_tac_instructions_list(TAC_INSTRUCTION_LIST, TAC_INSTRUCTION_LIST -> TAC_INSTRUCTION_LIST)
+       'rule' reverse_tac_instructions_list(NTACL, list(TAC_I, TAC_L) -> RTACL):
+              reverse_tac_instructions_list(list(TAC_I, NTACL),  TAC_L ->RTACL)
+       'rule' reverse_tac_instructions_list(NTACL, nil -> NTACL)
+
+
+-- Action which count proper number of rows for jumps and others ------------------------------------------------------------------------------
+'type' LABEL_ROW_MAP
+    nil
+    list(MAP_ENTITY, LABEL_ROW_MAP)
+
+'type' MAP_ENTITY
+    entity(ARGUMENT, INT)
+    
+'action' create_label_row_number_map(TAC_INSTRUCTION_LIST, INT, LABEL_ROW_MAP-> LABEL_ROW_MAP)
+       'rule' create_label_row_number_map(list(label(ARG), TACL), ROW_NUMBER, MAP -> NEW_MAP)
+              create_label_row_number_map(TACL, ROW_NUMBER + 1, list(entity(ARG, ROW_NUMBER),MAP) -> NEW_MAP)
+       'rule' create_label_row_number_map(list(TACI, TACL), ROW_NUMBER, MAP -> NEW_MAP)
+              create_label_row_number_map(TACL, ROW_NUMBER + 1, MAP -> NEW_MAP)
+       'rule' create_label_row_number_map(nil, ROW_NUMBER, MAP -> MAP)
+              
 
